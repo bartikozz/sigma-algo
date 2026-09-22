@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>σ Algo · výsledky backtestu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --sunk:#E9EDF4; --line:#D5DCE8; --text:#16203A; --muted:#5B6782;
+  --long:#1E8C80; --short:#D6443F; --amber:#B7801A; --ink:#16203A;
+  --pos-1:#CFEDE9; --pos-2:#8FD3CB; --pos-3:#3FAF9F; --neg-1:#F7D7D5; --neg-2:#EE9E9A; --neg-3:#D6443F;
+  --font: "Archivo", "Helvetica Neue", Arial, system-ui, sans-serif;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121A2B; --surface:#18233A; --sunk:#0F1626; --line:#2A3752; --text:#E5EAF3; --muted:#93A0BA;
+    --long:#2FB7A7; --short:#F0605B; --amber:#E8B04B; --ink:#E5EAF3;
+    --pos-1:#173D3E; --pos-2:#1E6B66; --pos-3:#27A393; --neg-1:#402530; --neg-2:#7A3037; --neg-3:#D9534E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121A2B; --surface:#18233A; --sunk:#0F1626; --line:#2A3752; --text:#E5EAF3; --muted:#93A0BA;
+  --long:#2FB7A7; --short:#F0605B; --amber:#E8B04B; --ink:#E5EAF3;
+  --pos-1:#173D3E; --pos-2:#1E6B66; --pos-3:#27A393; --neg-1:#402530; --neg-2:#7A3037; --neg-3:#D9534E;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.55;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+nav.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:18px;height:56px;overflow-x:auto;scrollbar-width:none}
+nav.top .brand{font-weight:800;font-stretch:112%;white-space:nowrap}
+nav.top a{text-decoration:none;color:var(--muted);font-size:14px;white-space:nowrap}
+nav.top a:hover{color:var(--text)}
+.theme{margin-left:auto;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+header.hero{padding:56px 0 28px;position:relative;overflow:hidden}
+.ladder{position:absolute;inset:0;pointer-events:none;opacity:.55}
+.ladder div{position:absolute;left:0;right:0;border-top:1px dashed var(--line)}
+.ladder span{position:absolute;right:22px;transform:translateY(-55%);font-size:12px;color:var(--muted);background:var(--bg);padding:0 6px}
+.ladder .z{border-top:1px solid var(--muted)}
+.ladder .l4{border-top:2px solid var(--long)} .ladder .s4{border-top:2px solid var(--short)}
+h1{font-size:clamp(40px,7vw,84px);line-height:.95;font-weight:900;font-stretch:118%;letter-spacing:-.02em;margin:0 0 18px;max-width:14ch;position:relative}
+.lede{font-size:clamp(17px,2vw,20px);max-width:62ch;color:var(--muted);margin:0 0 26px;position:relative}
+.lede b{color:var(--text);font-weight:600}
+.qsel{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:26px}
+.qsel label{font-size:14px;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{font:inherit;font-size:14px;border:0;background:none;color:var(--muted);padding:6px 13px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);font-weight:700;box-shadow:0 1px 0 var(--line)}
+.stats{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:2px solid var(--ink);border-bottom:1px solid var(--line)}
+.stat{padding:14px 16px 16px 0}
+.stat .v{font-size:clamp(24px,3vw,34px);font-weight:800;font-stretch:108%;line-height:1.1}
+.stat .k{font-size:13px;color:var(--muted)}
+.pos{color:var(--long)} .neg{color:var(--short)}
+section{padding:46px 0 10px}
+h2{font-size:clamp(26px,3.4vw,38px);font-weight:850;font-stretch:112%;line-height:1.05;margin:0 0 8px;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:700;margin:26px 0 8px}
+.intro{color:var(--muted);max-width:70ch;margin:0 0 20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.chartbox{position:relative;height:340px}
+.chartbox.sm{height:180px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);background:var(--sunk);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+tr.hl td{background:color-mix(in srgb,var(--amber) 14%,transparent)}
+.note{font-size:14px;color:var(--muted);max-width:75ch}
+.heat{display:grid;grid-template-columns:56px repeat(12,minmax(44px,1fr)) 72px;gap:3px;min-width:720px}
+.heat div{padding:8px 4px;text-align:center;border-radius:5px;font-size:12.5px}
+.heat .h{color:var(--muted);background:none}
+.heat .y{text-align:left;font-weight:700;background:none}
+.heat .t{font-weight:700;background:var(--sunk)}
+.steps{list-style:none;padding:0;margin:0;counter-reset:s;display:grid;gap:14px}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+.steps>li::before{content:counter(s);font-weight:900;font-stretch:118%;font-size:26px;color:var(--amber);line-height:1}
+.steps .body{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.steps h3{margin:0 0 6px}
+.steps p{margin:0 0 10px;color:var(--muted);max-width:72ch}
+.verdict{display:inline-block;font-size:13px;font-weight:700;padding:2px 9px;border-radius:999px;margin-bottom:8px}
+.v-ok{background:color-mix(in srgb,var(--long) 18%,transparent);color:var(--long)}
+.v-warn{background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--amber)}
+.v-bad{background:color-mix(in srgb,var(--short) 16%,transparent);color:var(--short)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:15px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600}
+.checks{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.checks li{padding-left:28px;position:relative;max-width:74ch}
+.checks li::before{content:"";position:absolute;left:0;top:.35em;width:14px;height:14px;border-radius:4px;border:2px solid var(--amber)}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px}
+.filters select,.filters input{font:inherit;font-size:14px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.tradetbl{max-height:520px;overflow:auto}
+.pill{display:inline-block;min-width:22px;padding:1px 6px;border-radius:6px;font-weight:700;font-size:12px;text-align:center}
+.pill.L{background:color-mix(in srgb,var(--long) 18%,transparent);color:var(--long)}
+.pill.S{background:color-mix(in srgb,var(--short) 16%,transparent);color:var(--short)}
+footer{padding:40px 0 60px;color:var(--muted);font-size:13px}
+@media (max-width:640px){ .chartbox{height:260px} .steps>li{grid-template-columns:30px 1fr} header.hero{padding-top:34px} }
+@media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto!important} }
+</style>
+</head>
+<body>
+<nav class="top" aria-label="Sekce">
+  <div class="wrap">
+    <span class="brand">σ Algo</span>
+    <a href="#krivka">Křivka</a>
+    <a href="#runupy">Run-upy a drawdowny</a>
+    <a href="#mesice">Měsíce a roky</a>
+    <a href="#obchody">Obchody</a>
+    <a href="#vyvoj">Jak jsme k tomu došli</a>
+    <a href="#montecarlo">Monte Carlo</a>
+    <a href="#nasazeni">Nasazení</a>
+    <button class="theme" id="themeBtn" type="button">Přepnout motiv</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="ladder" aria-hidden="true" id="ladder"></div>
+  <div class="wrap">
+    <h1>Fade ±4σ zpět k anchoru</h1>
+    <p class="lede">Backtest MNQ na 15m, <b>leden 2024 – září 2026</b>, 104 obchodů. Vstup limitkou na ±4σ, stop 0.7σ za úrovní, cíl anchor. Obchoduje se jen strana ve směru denního trendu a jen v normálním režimu volatility.</p>
+    <div class="qsel">
+      <label id="qlab">Přepočet na velikost pozice</label>
+      <div class="seg" role="group" aria-labelledby="qlab" id="qseg"></div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<main class="wrap">
+<section id="krivka">
+  <h2>Křivka a drawdown</h2>
+  <p class="intro">Kumulativní čistý zisk po každém obchodu (po komisích a skluzu) a pod ním vzdálenost od posledního maxima. Dlouhé ploché úseky jsou u této strategie normální: 38 obchodů ročně a většinu zisku přinese pár velkých dnů.</p>
+  <div class="panel"><div class="chartbox"><canvas id="eqChart" aria-label="Kumulativní zisk"></canvas></div>
+  <div class="chartbox sm"><canvas id="ddChart" aria-label="Drawdown"></canvas></div></div>
+</section>
+
+<section id="runupy">
+  <h2>Run-upy a drawdowny</h2>
+  <p class="intro">Drawdown je pokles od maxima po nejnižší bod, dokud křivka nevytvoří nové maximum. Run-up je růst z tohoto dna na další vrchol. Seřazeno podle velikosti, zobrazeno pět největších.</p>
+  <div class="grid2">
+    <div><h3>Největší drawdowny</h3><div class="tbl"><table id="ddTbl"></table></div></div>
+    <div><h3>Největší run-upy</h3><div class="tbl"><table id="ruTbl"></table></div></div>
+  </div>
+  <p class="note" id="ddNote"></p>
+</section>
+
+<section id="mesice">
+  <h2>Měsíce a roky</h2>
+  <p class="intro">Čistý zisk po měsících. Barva ukazuje směr a velikost, prázdné pole znamená měsíc bez obchodu.</p>
+  <div class="tbl" style="padding:12px"><div class="heat" id="heat"></div></div>
+  <div class="grid2" style="margin-top:18px">
+    <div><h3>Podle roku</h3><div class="tbl"><table id="yrTbl"></table></div></div>
+    <div><h3>Long vs. short</h3><div class="tbl"><table id="sideTbl"></table></div></div>
+  </div>
+</section>
+
+<section id="obchody">
+  <h2>Obchody</h2>
+  <p class="intro">Rozložení výsledků, vztah mezi maximálním ziskem a ztrátou v průběhu obchodu a kompletní seznam.</p>
+  <div class="grid2">
+    <div class="panel"><h3 style="margin-top:0">Rozložení výsledků</h3><div class="chartbox" style="height:260px"><canvas id="histChart"></canvas></div></div>
+    <div class="panel"><h3 style="margin-top:0">MAE vs. MFE</h3><div class="chartbox" style="height:260px"><canvas id="scatChart"></canvas></div>
+    <p class="note" style="margin:8px 0 0">Vodorovně nejhorší pohyb proti tobě, svisle nejlepší pohyb ve prospěch. Ztrátové obchody se skoro nikdy nedostaly výrazně do plusu, takže stop 0.7σ zbytečně neřeže vítěze.</p></div>
+  </div>
+  <div class="grid2" style="margin-top:18px">
+    <div><h3>Charakteristika</h3><div class="tbl"><table id="charTbl"></table></div></div>
+    <div><h3>Pět nejlepších a nejhorších</h3><div class="tbl"><table id="topTbl"></table></div></div>
+  </div>
+  <h3>Všechny obchody</h3>
+  <div class="filters">
+    <select id="fSide" aria-label="Strana"><option value="">Obě strany</option><option value="L">Long</option><option value="S">Short</option></select>
+    <select id="fRes" aria-label="Výsledek"><option value="">Výhry i ztráty</option><option value="w">Jen výhry</option><option value="l">Jen ztráty</option></select>
+    <select id="fYr" aria-label="Rok"><option value="">Všechny roky</option></select>
+  </div>
+  <div class="tbl tradetbl"><table id="tradeTbl"></table></div>
+</section>
+
+<section id="vyvoj">
+  <h2>Jak jsme k tomu došli</h2>
+  <p class="intro">Každý krok testu a co z něj vyplynulo. Pořadí je důležité: parametry se ladily na období Nov 2025 – Sep 2026 a roky 2024 a 2025 sloužily jako kontrola na datech, která parametry neviděly.</p>
+  <ol class="steps" id="steps"></ol>
+</section>
+
+<section id="montecarlo">
+  <h2>Monte Carlo</h2>
+  <p class="intro">20 tisíc náhodných přeskládání obchodů na MFFU 50K: EOD trailing drawdown $2 000, který se zastaví na počátečním zůstatku. Pád účtu se kontroluje i během obchodu podle nejhoršího pohybu. Stresová varianta používá jen obchody z let 2024–2025 (PF 1.3), bez výjimečně dobrého roku 2026. Řádek podle zvolené velikosti je zvýrazněný. Velikosti v NQ jsou nad limitem MFFU, pro ně platí tabulka vlastního účtu níže.</p>
+  <h3>Funded účet, jeden rok (~38 obchodů)</h3>
+  <div class="grid2">
+    <div><p class="note">Normální scénář</p><div class="tbl"><table id="mcBase"></table></div></div>
+    <div><p class="note">Stresový scénář</p><div class="tbl"><table id="mcStress"></table></div></div>
+  </div>
+  <h3>Evaluace: cíl +$3 000, 50% consistency</h3>
+  <div class="grid2">
+    <div><p class="note">Normální scénář</p><div class="tbl"><table id="mcEval"></table></div></div>
+    <div><p class="note">Stresový scénář</p><div class="tbl"><table id="mcEvalS"></table></div></div>
+  </div>
+  <h3>Vlastní účet bez limitu drawdownu</h3>
+  <p class="note">Stejná simulace bez prop pravidel, přepočtená na zvolenou velikost. Hodí se pro live účet, kde velikost určuje propad, který jsi ochotný vydržet.</p>
+  <div class="tbl"><table id="mcOwn"></table></div>
+  <p class="note" id="ownNote" style="margin-top:10px"></p>
+  <div class="tbl" style="margin-top:12px"><table id="sizeTbl"></table></div>
+  <p class="note">Simulace bere obchody jako nezávislé. Ve skutečnosti se ztráty shlukují (rok 2025), takže realističtější spodní hranici ukazuje stresová varianta.</p>
+</section>
+
+<section id="nasazeni">
+  <h2>Nasazení</h2>
+  <div class="grid2">
+    <div class="panel">
+      <h3 style="margin-top:0">Finální nastavení</h3>
+      <dl class="kv">
+        <dt>Graf</dt><dd>MNQ1!, 15 min</dd>
+        <dt>Okno</dt><dd>04:00–18:00 ET</dd>
+        <dt>Vstup</dt><dd>limit na ±4σ, obě strany podle trendu</dd>
+        <dt>Stop</dt><dd>0.7σ za úrovní</dd>
+        <dt>Cíl</dt><dd>anchor (close 19:00 ET)</dd>
+        <dt>Za okno</dt><dd>max 1 obchod, stopka po 1 ztrátě</dd>
+        <dt>Gap filtr</dt><dd>max 1.5σ od anchoru</dd>
+        <dt>Initial Balance</dt><dd>60 min, max 2σ</dd>
+        <dt>Trend filtr</dt><dd>denní EMA 20</dd>
+        <dt>Vol režim</dt><dd>ATR5/ATR20 mezi 0.8 a 1.3</dd>
+        <dt>Denní stop</dt><dd>vypnutý</dd>
+        <dt>Evaluace</dt><dd>4 MNQ</dd>
+        <dt>Funded</dt><dd>2 MNQ, po zamčení drawdownu 3–4 MNQ</dd>
+      </dl>
+    </div>
+    <div class="panel">
+      <h3 style="margin-top:0">MFFU 50K Pro</h3>
+      <dl class="kv">
+        <dt>Cíl evaluace</dt><dd>$3 000</dd>
+        <dt>Drawdown</dt><dd>$2 000 EOD, bez denního limitu</dd>
+        <dt>Consistency</dt><dd>50 % v evaluaci, na funded žádná</dd>
+        <dt>Max pozice</dt><dd>eval 3 kontrakty (10:1 mikro), funded 5</dd>
+        <dt>Neaktivita</dt><dd>7 kalendářních dní v evaluaci</dd>
+        <dt>Výplaty</dt><dd>po 14 dnech, min. $1 000, buffer $2 100, split 80 %</dd>
+      </dl>
+      <p class="note" id="gapNote" style="margin-top:12px"></p>
+    </div>
+  </div>
+  <h3>Před ostrým nasazením ověřit u MFFU</h3>
+  <ul class="checks">
+    <li>Je povolená automatizace přes TradersPost s dohledem traderu na Pro účtu?</li>
+    <li>Splní inactivity rule malý ruční obchod a platí pravidlo i na funded účtu?</li>
+    <li>Je na funded účtu omezení obchodování kolem zpráv (data v 8:30, FOMC)?</li>
+    <li>Znamená max 5 kontraktů na funded účtu 5 mini, nebo 5 mikro?</li>
+    <li>Dostanu Pro účet na Tradovate i s kupónem, nebo jen na HyperProp?</li>
+  </ul>
+  <h3>Technická cesta</h3>
+  <ul class="checks">
+    <li>TradingView alert (alert() function calls only) posílá po skončení IB jednu bracket objednávku a na konci okna exit se zrušením.</li>
+    <li>TradersPost přepošle objednávku na Tradovate. Nejdřív 2–4 týdny na demo účtu, denní kontrola řádku Plán dnes proti objednávce u brokera.</li>
+    <li>Po každé změně skriptu nebo nastavení smazat a znovu vytvořit alert.</li>
+  </ul>
+</section>
+</main>
+<footer class="wrap">Data: export seznamu obchodů z TradingView Strategy Testeru (σ Algo, MNQ1!, High detalization), přepočteno na 1 kontrakt a zpět na zvolenou velikost. Výsledky jsou backtest, ne záruka budoucích výsledků.</footer>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+<script>
+const D = {"q0": 3, "trades": [{"n": 1, "side": "S", "et": "2024-01-18 06:30", "xt": "2024-01-18 07:00", "ep": 16978.75, "xp": 17000.5, "pnl": -44.74, "mfe": 0.0, "mae": -44.12, "bars": 2, "sig": "xS"}, {"n": 2, "side": "S", "et": "2024-01-25 09:00", "xt": "2024-01-25 11:45", "ep": 17719.75, "xp": 17741.0, "pnl": -43.74, "mfe": 139.38, "mae": -43.12, "bars": 11, "sig": "xS"}, {"n": 3, "side": "L", "et": "2024-01-30 12:15", "xt": "2024-01-30 12:30", "ep": 17601.0, "xp": 17580.75, "pnl": -41.74, "mfe": 0.0, "mae": -41.12, "bars": 1, "sig": "xL"}, {"n": 4, "side": "L", "et": "2024-02-05 10:30", "xt": "2024-02-05 10:30", "ep": 17590.5, "xp": 17567.5, "pnl": -47.24, "mfe": 0.0, "mae": -46.62, "bars": 0, "sig": "xL"}, {"n": 5, "side": "L", "et": "2024-02-06 12:15", "xt": "2024-02-06 18:15", "ep": 17566.0, "xp": 17659.75, "pnl": 186.26, "mfe": 203.38, "mae": -11.12, "bars": 20, "sig": "Konec okna"}, {"n": 6, "side": "L", "et": "2024-02-13 07:00", "xt": "2024-02-13 08:30", "ep": 17811.0, "xp": 17790.25, "pnl": -42.74, "mfe": 122.38, "mae": -42.12, "bars": 6, "sig": "xL"}, {"n": 7, "side": "L", "et": "2024-03-14 10:00", "xt": "2024-03-14 15:00", "ep": 18215.75, "xp": 18189.5, "pnl": -53.74, "mfe": 251.88, "mae": -53.12, "bars": 20, "sig": "xL"}, {"n": 8, "side": "L", "et": "2024-03-15 09:30", "xt": "2024-03-15 10:00", "ep": 18092.0, "xp": 18066.5, "pnl": -52.24, "mfe": 72.88, "mae": -51.62, "bars": 2, "sig": "xL"}, {"n": 9, "side": "L", "et": "2024-03-25 09:30", "xt": "2024-03-25 14:45", "ep": 18431.75, "xp": 18571.25, "pnl": 277.76, "mfe": 278.38, "mae": -34.12, "bars": 21, "sig": "xL"}, {"n": 10, "side": "L", "et": "2024-04-01 11:00", "xt": "2024-04-01 11:15", "ep": 18457.25, "xp": 18435.75, "pnl": -44.24, "mfe": 27.88, "mae": -43.62, "bars": 1, "sig": "xL"}, {"n": 11, "side": "L", "et": "2024-04-04 14:30", "xt": "2024-04-04 14:30", "ep": 18283.0, "xp": 18262.5, "pnl": -42.24, "mfe": 0.0, "mae": -41.62, "bars": 0, "sig": "xL"}, {"n": 12, "side": "L", "et": "2024-04-09 10:30", "xt": "2024-04-09 15:15", "ep": 18180.5, "xp": 18312.5, "pnl": 262.76, "mfe": 263.38, "mae": -41.12, "bars": 19, "sig": "xL"}, {"n": 13, "side": "S", "et": "2024-04-22 13:45", "xt": "2024-04-22 14:15", "ep": 17394.75, "xp": 17421.0, "pnl": -53.74, "mfe": 20.38, "mae": -53.12, "bars": 2, "sig": "xS"}, {"n": 14, "side": "S", "et": "2024-04-25 16:00", "xt": "2024-04-25 16:00", "ep": 17633.75, "xp": 17661.5, "pnl": -56.74, "mfe": 0.0, "mae": -56.12, "bars": 0, "sig": "xS"}, {"n": 15, "side": "S", "et": "2024-05-03 08:30", "xt": "2024-05-03 08:30", "ep": 17924.0, "xp": 17953.0, "pnl": -59.24, "mfe": 0.0, "mae": -58.62, "bars": 0, "sig": "xS"}, {"n": 16, "side": "S", "et": "2024-05-06 15:45", "xt": "2024-05-06 18:15", "ep": 18192.75, "xp": 18183.0, "pnl": 18.26, "mfe": 34.38, "mae": -18.62, "bars": 6, "sig": "Konec okna"}, {"n": 17, "side": "L", "et": "2024-05-30 15:30", "xt": "2024-05-30 15:45", "ep": 18607.5, "xp": 18588.0, "pnl": -40.24, "mfe": 60.38, "mae": -39.62, "bars": 1, "sig": "xL"}, {"n": 18, "side": "L", "et": "2024-06-07 08:30", "xt": "2024-06-07 10:30", "ep": 18948.25, "xp": 19078.0, "pnl": 258.26, "mfe": 258.88, "mae": -17.12, "bars": 8, "sig": "xL"}, {"n": 19, "side": "L", "et": "2024-06-24 09:30", "xt": "2024-06-24 10:30", "ep": 19889.5, "xp": 19865.75, "pnl": -48.74, "mfe": 211.38, "mae": -48.12, "bars": 4, "sig": "xL"}, {"n": 20, "side": "L", "et": "2024-06-28 15:30", "xt": "2024-06-28 15:30", "ep": 19961.75, "xp": 19939.5, "pnl": -45.74, "mfe": 0.0, "mae": -45.12, "bars": 0, "sig": "xL"}, {"n": 21, "side": "L", "et": "2024-07-11 10:00", "xt": "2024-07-11 10:15", "ep": 20767.75, "xp": 20746.75, "pnl": -43.24, "mfe": 0.0, "mae": -42.62, "bars": 1, "sig": "xL"}, {"n": 22, "side": "L", "et": "2024-07-18 10:30", "xt": "2024-07-18 11:00", "ep": 19916.75, "xp": 19892.25, "pnl": -50.24, "mfe": 210.88, "mae": -49.62, "bars": 2, "sig": "xL"}, {"n": 23, "side": "S", "et": "2024-07-22 09:30", "xt": "2024-07-22 09:45", "ep": 19974.0, "xp": 20002.0, "pnl": -57.24, "mfe": 182.88, "mae": -56.62, "bars": 1, "sig": "xS"}, {"n": 24, "side": "L", "et": "2024-08-22 11:30", "xt": "2024-08-22 11:30", "ep": 19718.0, "xp": 19681.0, "pnl": -75.24, "mfe": 0.0, "mae": -74.62, "bars": 0, "sig": "xL"}, {"n": 25, "side": "L", "et": "2024-08-28 11:00", "xt": "2024-08-28 11:00", "ep": 19408.5, "xp": 19374.25, "pnl": -69.74, "mfe": 0.0, "mae": -69.12, "bars": 0, "sig": "xL"}, {"n": 26, "side": "S", "et": "2024-09-11 13:45", "xt": "2024-09-11 14:15", "ep": 19056.25, "xp": 19092.25, "pnl": -73.24, "mfe": 48.38, "mae": -72.62, "bars": 2, "sig": "xS"}, {"n": 27, "side": "S", "et": "2024-09-12 13:45", "xt": "2024-09-12 14:00", "ep": 19437.75, "xp": 19472.75, "pnl": -71.24, "mfe": 0.0, "mae": -70.62, "bars": 1, "sig": "xS"}, {"n": 28, "side": "L", "et": "2024-09-16 10:30", "xt": "2024-09-16 18:00", "ep": 19317.5, "xp": 19658.0, "pnl": 679.76, "mfe": 680.38, "mae": -37.62, "bars": 26, "sig": "xL"}, {"n": 29, "side": "L", "et": "2024-09-20 11:15", "xt": "2024-09-20 15:30", "ep": 19868.25, "xp": 20054.25, "pnl": 370.76, "mfe": 371.38, "mae": -17.12, "bars": 17, "sig": "xL"}, {"n": 30, "side": "L", "et": "2024-09-30 14:15", "xt": "2024-09-30 15:45", "ep": 20076.5, "xp": 20243.5, "pnl": 332.76, "mfe": 333.38, "mae": -38.62, "bars": 6, "sig": "xL"}, {"n": 31, "side": "L", "et": "2024-10-01 09:30", "xt": "2024-10-01 09:45", "ep": 20077.0, "xp": 20048.5, "pnl": -58.24, "mfe": 51.38, "mae": -57.62, "bars": 1, "sig": "xL"}, {"n": 32, "side": "L", "et": "2024-10-15 10:30", "xt": "2024-10-15 10:30", "ep": 20476.0, "xp": 20450.25, "pnl": -52.74, "mfe": 0.0, "mae": -52.12, "bars": 0, "sig": "xL"}, {"n": 33, "side": "L", "et": "2024-10-16 10:00", "xt": "2024-10-16 14:15", "ep": 20207.0, "xp": 20353.25, "pnl": 291.26, "mfe": 291.88, "mae": -4.12, "bars": 17, "sig": "xL"}, {"n": 34, "side": "L", "et": "2024-10-22 08:30", "xt": "2024-10-22 10:00", "ep": 20376.0, "xp": 20517.5, "pnl": 281.76, "mfe": 282.38, "mae": -32.12, "bars": 6, "sig": "xL"}, {"n": 35, "side": "L", "et": "2024-10-23 10:00", "xt": "2024-10-23 11:00", "ep": 20365.75, "xp": 20341.25, "pnl": -50.24, "mfe": 183.88, "mae": -49.62, "bars": 4, "sig": "xL"}, {"n": 36, "side": "L", "et": "2024-10-30 09:30", "xt": "2024-10-30 09:30", "ep": 20603.0, "xp": 20578.75, "pnl": -49.74, "mfe": 0.0, "mae": -49.12, "bars": 0, "sig": "xL"}, {"n": 37, "side": "L", "et": "2024-11-11 13:00", "xt": "2024-11-11 13:15", "ep": 21129.0, "xp": 21100.0, "pnl": -59.24, "mfe": 27.38, "mae": -58.62, "bars": 1, "sig": "xL"}, {"n": 38, "side": "L", "et": "2024-11-12 13:00", "xt": "2024-11-12 18:15", "ep": 21064.5, "xp": 21159.0, "pnl": 187.76, "mfe": 292.38, "mae": -20.12, "bars": 17, "sig": "Konec okna"}, {"n": 39, "side": "L", "et": "2024-11-14 15:00", "xt": "2024-11-14 15:30", "ep": 21004.0, "xp": 20978.25, "pnl": -52.74, "mfe": 76.88, "mae": -52.12, "bars": 2, "sig": "xL"}, {"n": 40, "side": "L", "et": "2024-11-25 12:45", "xt": "2024-11-25 18:15", "ep": 20785.75, "xp": 20931.5, "pnl": 290.26, "mfe": 293.88, "mae": -11.62, "bars": 18, "sig": "Konec okna"}, {"n": 41, "side": "L", "et": "2024-11-27 10:00", "xt": "2024-11-27 10:15", "ep": 20825.25, "xp": 20798.5, "pnl": -54.74, "mfe": 0.0, "mae": -54.12, "bars": 1, "sig": "xL"}, {"n": 42, "side": "L", "et": "2024-12-12 10:00", "xt": "2024-12-12 16:15", "ep": 21625.25, "xp": 21602.25, "pnl": -47.24, "mfe": 237.88, "mae": -46.62, "bars": 25, "sig": "xL"}, {"n": 43, "side": "L", "et": "2024-12-17 10:15", "xt": "2024-12-17 18:00", "ep": 22255.75, "xp": 22232.5, "pnl": -47.74, "mfe": 260.38, "mae": -47.12, "bars": 27, "sig": "xL"}, {"n": 44, "side": "L", "et": "2024-12-18 14:00", "xt": "2024-12-18 14:00", "ep": 22159.5, "xp": 22135.25, "pnl": -49.74, "mfe": 0.0, "mae": -49.12, "bars": 0, "sig": "xL"}, {"n": 45, "side": "L", "et": "2024-12-30 07:30", "xt": "2024-12-30 07:45", "ep": 21515.5, "xp": 21483.5, "pnl": -65.24, "mfe": 16.88, "mae": -64.62, "bars": 1, "sig": "xL"}, {"n": 46, "side": "S", "et": "2025-01-03 09:30", "xt": "2025-01-03 09:30", "ep": 21390.5, "xp": 21424.0, "pnl": -68.24, "mfe": 0.0, "mae": -67.62, "bars": 0, "sig": "xS"}, {"n": 47, "side": "L", "et": "2025-01-07 10:00", "xt": "2025-01-07 10:15", "ep": 21572.25, "xp": 21537.75, "pnl": -70.24, "mfe": 14.38, "mae": -69.62, "bars": 1, "sig": "xL"}, {"n": 48, "side": "L", "et": "2025-01-08 12:15", "xt": "2025-01-08 12:30", "ep": 21207.75, "xp": 21173.25, "pnl": -70.24, "mfe": 0.0, "mae": -69.62, "bars": 1, "sig": "xL"}, {"n": 49, "side": "S", "et": "2025-01-15 08:30", "xt": "2025-01-15 08:30", "ep": 21127.25, "xp": 21160.0, "pnl": -66.74, "mfe": 0.0, "mae": -66.12, "bars": 0, "sig": "xS"}, {"n": 50, "side": "S", "et": "2025-01-20 09:30", "xt": "2025-01-20 18:15", "ep": 21751.25, "xp": 21713.0, "pnl": 75.26, "mfe": 255.88, "mae": -58.12, "bars": 15, "sig": "Konec okna"}, {"n": 51, "side": "L", "et": "2025-01-26 18:00", "xt": "2025-01-26 18:00", "ep": 21773.75, "xp": 21773.5, "pnl": -1.74, "mfe": 0.0, "mae": -1.12, "bars": 0, "sig": "xL"}, {"n": 52, "side": "S", "et": "2025-01-31 10:00", "xt": "2025-01-31 10:45", "ep": 21903.25, "xp": 21940.25, "pnl": -75.24, "mfe": 60.38, "mae": -74.62, "bars": 3, "sig": "xS"}, {"n": 53, "side": "L", "et": "2025-02-07 10:45", "xt": "2025-02-07 12:00", "ep": 21640.75, "xp": 21603.5, "pnl": -75.74, "mfe": 235.38, "mae": -75.12, "bars": 5, "sig": "xL"}, {"n": 54, "side": "L", "et": "2025-02-12 08:30", "xt": "2025-02-12 08:30", "ep": 21606.75, "xp": 21571.25, "pnl": -72.24, "mfe": 0.0, "mae": -71.62, "bars": 0, "sig": "xL"}, {"n": 55, "side": "L", "et": "2025-02-20 09:45", "xt": "2025-02-20 09:45", "ep": 22045.75, "xp": 22015.5, "pnl": -61.74, "mfe": 0.0, "mae": -61.12, "bars": 0, "sig": "xL"}, {"n": 56, "side": "S", "et": "2025-02-28 15:45", "xt": "2025-02-28 15:45", "ep": 20851.75, "xp": 20883.0, "pnl": -63.74, "mfe": 0.0, "mae": -63.12, "bars": 0, "sig": "xS"}, {"n": 57, "side": "S", "et": "2025-03-03 07:00", "xt": "2025-03-03 09:45", "ep": 21097.25, "xp": 20897.75, "pnl": 397.76, "mfe": 398.38, "mae": -47.62, "bars": 11, "sig": "xS"}, {"n": 58, "side": "S", "et": "2025-03-04 15:15", "xt": "2025-03-04 15:30", "ep": 20706.0, "xp": 20503.25, "pnl": 404.26, "mfe": 404.88, "mae": -54.62, "bars": 1, "sig": "xS"}, {"n": 59, "side": "S", "et": "2025-03-14 11:00", "xt": "2025-03-14 11:30", "ep": 19633.0, "xp": 19678.0, "pnl": -91.24, "mfe": 35.88, "mae": -90.62, "bars": 2, "sig": "xS"}, {"n": 60, "side": "S", "et": "2025-03-17 09:30", "xt": "2025-03-17 14:00", "ep": 19824.75, "xp": 19869.75, "pnl": -91.24, "mfe": 391.88, "mae": -90.62, "bars": 18, "sig": "xS"}, {"n": 61, "side": "S", "et": "2025-03-19 14:30", "xt": "2025-03-19 14:45", "ep": 19959.25, "xp": 20003.0, "pnl": -88.74, "mfe": 34.88, "mae": -88.12, "bars": 1, "sig": "xS"}, {"n": 62, "side": "S", "et": "2025-03-23 18:00", "xt": "2025-03-23 18:15", "ep": 20101.5, "xp": 20077.0, "pnl": 47.76, "mfe": 49.38, "mae": -1.62, "bars": 1, "sig": "Konec okna"}, {"n": 63, "side": "L", "et": "2025-03-26 10:15", "xt": "2025-03-26 10:15", "ep": 20284.5, "xp": 20244.0, "pnl": -82.24, "mfe": 0.0, "mae": -81.62, "bars": 0, "sig": "xL"}, {"n": 64, "side": "S", "et": "2025-04-01 12:00", "xt": "2025-04-01 14:15", "ep": 19611.75, "xp": 19390.75, "pnl": 440.76, "mfe": 441.38, "mae": -63.62, "bars": 9, "sig": "xS"}, {"n": 65, "side": "L", "et": "2025-04-30 09:30", "xt": "2025-04-30 09:30", "ep": 19199.75, "xp": 19138.0, "pnl": -124.74, "mfe": 0.0, "mae": -124.12, "bars": 0, "sig": "xL"}, {"n": 66, "side": "L", "et": "2025-06-05 15:15", "xt": "2025-06-05 15:15", "ep": 21542.25, "xp": 21506.0, "pnl": -73.74, "mfe": 0.0, "mae": -73.12, "bars": 0, "sig": "xL"}, {"n": 67, "side": "S", "et": "2025-08-07 06:15", "xt": "2025-08-07 09:45", "ep": 23621.0, "xp": 23648.5, "pnl": -56.24, "mfe": 102.38, "mae": -55.62, "bars": 14, "sig": "xS"}, {"n": 68, "side": "L", "et": "2025-08-19 09:30", "xt": "2025-08-19 09:45", "ep": 23673.25, "xp": 23648.75, "pnl": -50.24, "mfe": 52.88, "mae": -49.62, "bars": 1, "sig": "xL"}, {"n": 69, "side": "S", "et": "2025-08-22 10:00", "xt": "2025-08-22 10:00", "ep": 23385.5, "xp": 23411.5, "pnl": -53.24, "mfe": 0.0, "mae": -52.62, "bars": 0, "sig": "xS"}, {"n": 70, "side": "L", "et": "2025-08-27 16:15", "xt": "2025-08-27 16:15", "ep": 23461.0, "xp": 23434.5, "pnl": -54.24, "mfe": 0.0, "mae": -53.62, "bars": 0, "sig": "xL"}, {"n": 71, "side": "S", "et": "2025-09-03 10:30", "xt": "2025-09-03 10:30", "ep": 23488.25, "xp": 23514.5, "pnl": -53.74, "mfe": 0.0, "mae": -53.12, "bars": 0, "sig": "xS"}, {"n": 72, "side": "S", "et": "2025-09-04 14:30", "xt": "2025-09-04 15:15", "ep": 23612.0, "xp": 23640.25, "pnl": -57.74, "mfe": 12.88, "mae": -57.12, "bars": 3, "sig": "xS"}, {"n": 73, "side": "S", "et": "2025-09-05 08:45", "xt": "2025-09-05 09:00", "ep": 23868.25, "xp": 23895.5, "pnl": -55.74, "mfe": 0.0, "mae": -55.12, "bars": 1, "sig": "xS"}, {"n": 74, "side": "L", "et": "2025-09-23 13:30", "xt": "2025-09-23 13:30", "ep": 24849.5, "xp": 24825.25, "pnl": -49.74, "mfe": 0.0, "mae": -49.12, "bars": 0, "sig": "xL"}, {"n": 75, "side": "L", "et": "2025-09-24 11:45", "xt": "2025-09-24 11:45", "ep": 24712.0, "xp": 24687.5, "pnl": -50.24, "mfe": 0.0, "mae": -49.62, "bars": 0, "sig": "xL"}, {"n": 76, "side": "L", "et": "2025-09-25 07:30", "xt": "2025-09-25 08:30", "ep": 24609.5, "xp": 24585.5, "pnl": -49.24, "mfe": 45.88, "mae": -48.62, "bars": 4, "sig": "xL"}, {"n": 77, "side": "L", "et": "2025-10-07 11:30", "xt": "2025-10-07 18:15", "ep": 25007.75, "xp": 25059.25, "pnl": 101.76, "mfe": 167.88, "mae": -45.62, "bars": 23, "sig": "Konec okna"}, {"n": 78, "side": "L", "et": "2025-10-09 10:30", "xt": "2025-10-09 10:30", "ep": 25244.5, "xp": 25221.25, "pnl": -47.74, "mfe": 0.0, "mae": -47.12, "bars": 0, "sig": "xL"}, {"n": 79, "side": "L", "et": "2025-10-10 10:45", "xt": "2025-10-10 10:45", "ep": 25178.25, "xp": 25154.5, "pnl": -48.74, "mfe": 0.0, "mae": -48.12, "bars": 0, "sig": "xL"}, {"n": 80, "side": "L", "et": "2025-11-06 09:45", "xt": "2025-11-06 10:00", "ep": 25518.75, "xp": 25483.5, "pnl": -71.74, "mfe": 0.0, "mae": -71.12, "bars": 1, "sig": "xL"}, {"n": 81, "side": "L", "et": "2025-11-07 06:15", "xt": "2025-11-07 07:45", "ep": 25104.5, "xp": 25067.75, "pnl": -74.74, "mfe": 181.88, "mae": -74.12, "bars": 6, "sig": "xL"}, {"n": 82, "side": "S", "et": "2025-11-19 09:45", "xt": "2025-11-19 09:45", "ep": 24787.0, "xp": 24830.25, "pnl": -87.74, "mfe": 0.0, "mae": -87.12, "bars": 0, "sig": "xS"}, {"n": 83, "side": "S", "et": "2026-01-06 09:45", "xt": "2026-01-06 09:45", "ep": 25715.75, "xp": 25743.75, "pnl": -57.24, "mfe": 0.0, "mae": -56.62, "bars": 0, "sig": "xS"}, {"n": 84, "side": "L", "et": "2026-01-08 09:30", "xt": "2026-01-08 09:30", "ep": 25663.75, "xp": 25636.0, "pnl": -56.74, "mfe": 0.0, "mae": -56.12, "bars": 0, "sig": "xL"}, {"n": 85, "side": "L", "et": "2026-01-14 05:15", "xt": "2026-01-14 05:45", "ep": 25757.25, "xp": 25729.25, "pnl": -57.24, "mfe": 34.88, "mae": -56.62, "bars": 2, "sig": "xL"}, {"n": 86, "side": "S", "et": "2026-01-23 10:45", "xt": "2026-01-25 18:00", "ep": 25815.25, "xp": 25590.25, "pnl": 448.76, "mfe": 449.38, "mae": -61.12, "bars": 25, "sig": "xS"}, {"n": 87, "side": "L", "et": "2026-02-04 09:45", "xt": "2026-02-04 10:00", "ep": 25186.5, "xp": 25148.25, "pnl": -77.74, "mfe": 147.88, "mae": -77.12, "bars": 1, "sig": "xL"}, {"n": 88, "side": "S", "et": "2026-02-20 11:00", "xt": "2026-02-20 12:15", "ep": 25136.75, "xp": 24889.5, "pnl": 493.26, "mfe": 493.88, "mae": -6.62, "bars": 5, "sig": "xS"}, {"n": 89, "side": "S", "et": "2026-02-24 11:00", "xt": "2026-02-24 12:00", "ep": 25034.75, "xp": 25076.25, "pnl": -84.24, "mfe": 130.38, "mae": -83.62, "bars": 4, "sig": "xS"}, {"n": 90, "side": "S", "et": "2026-02-25 09:30", "xt": "2026-02-25 09:45", "ep": 25260.5, "xp": 25301.25, "pnl": -82.74, "mfe": 0.0, "mae": -82.12, "bars": 1, "sig": "xS"}, {"n": 91, "side": "L", "et": "2026-02-27 09:30", "xt": "2026-02-27 10:45", "ep": 24783.0, "xp": 25011.25, "pnl": 455.26, "mfe": 455.88, "mae": -6.62, "bars": 5, "sig": "xL"}, {"n": 92, "side": "S", "et": "2026-03-09 10:30", "xt": "2026-03-09 10:45", "ep": 24531.0, "xp": 24574.75, "pnl": -88.74, "mfe": 1.88, "mae": -88.12, "bars": 1, "sig": "xS"}, {"n": 93, "side": "S", "et": "2026-03-16 09:30", "xt": "2026-03-16 10:00", "ep": 24700.75, "xp": 24745.0, "pnl": -89.74, "mfe": 62.88, "mae": -89.12, "bars": 2, "sig": "xS"}, {"n": 94, "side": "S", "et": "2026-03-17 09:45", "xt": "2026-03-17 18:15", "ep": 25096.25, "xp": 25017.0, "pnl": 157.26, "mfe": 299.88, "mae": -37.12, "bars": 30, "sig": "Konec okna"}, {"n": 95, "side": "L", "et": "2026-03-19 09:30", "xt": "2026-03-19 15:00", "ep": 24363.0, "xp": 24609.25, "pnl": 491.26, "mfe": 491.88, "mae": -78.12, "bars": 22, "sig": "xL"}, {"n": 96, "side": "L", "et": "2026-04-12 18:00", "xt": "2026-04-12 18:15", "ep": 24935.0, "xp": 25001.5, "pnl": 131.76, "mfe": 132.38, "mae": -41.62, "bars": 1, "sig": "Konec okna"}, {"n": 97, "side": "L", "et": "2026-04-21 15:30", "xt": "2026-04-21 18:15", "ep": 26574.5, "xp": 26756.5, "pnl": 362.76, "mfe": 439.38, "mae": -46.12, "bars": 7, "sig": "Konec okna"}, {"n": 98, "side": "L", "et": "2026-06-03 18:00", "xt": "2026-06-03 18:15", "ep": 30446.0, "xp": 30456.5, "pnl": 19.76, "mfe": 107.38, "mae": -26.12, "bars": 1, "sig": "Konec okna"}, {"n": 99, "side": "L", "et": "2026-06-24 15:00", "xt": "2026-06-24 16:00", "ep": 29282.0, "xp": 29652.0, "pnl": 738.76, "mfe": 739.38, "mae": -38.62, "bars": 4, "sig": "xL"}, {"n": 100, "side": "S", "et": "2026-06-29 13:30", "xt": "2026-06-29 18:15", "ep": 30038.5, "xp": 30011.25, "pnl": 53.26, "mfe": 133.38, "mae": -61.62, "bars": 15, "sig": "Konec okna"}, {"n": 101, "side": "S", "et": "2026-06-30 10:15", "xt": "2026-06-30 12:00", "ep": 30424.75, "xp": 30494.0, "pnl": -139.74, "mfe": 284.38, "mae": -139.12, "bars": 7, "sig": "xS"}, {"n": 102, "side": "S", "et": "2026-07-20 09:30", "xt": "2026-07-20 15:00", "ep": 29147.0, "xp": 28812.75, "pnl": 667.26, "mfe": 667.88, "mae": -91.62, "bars": 22, "sig": "xS"}, {"n": 103, "side": "S", "et": "2026-08-03 13:45", "xt": "2026-08-03 18:15", "ep": 28918.25, "xp": 28928.25, "pnl": -21.24, "mfe": 104.38, "mae": -94.12, "bars": 14, "sig": "Konec okna"}, {"n": 104, "side": "L", "et": "2026-08-06 09:30", "xt": "2026-08-06 10:15", "ep": 29260.5, "xp": 29630.75, "pnl": 739.26, "mfe": 739.88, "mae": -39.62, "bars": 3, "sig": "xL"}], "mc": {"base": [{"q": 1, "breach": 0.0, "hit": 21.9, "med": 1818, "loss": 5.9, "dd50": 530, "dd95": 1046, "tmonths": 9.5}, {"q": 2, "breach": 5.6, "hit": 67.6, "med": 3624, "loss": 7.9, "dd50": 1060, "dd95": 1929, "tmonths": 6.6}, {"q": 3, "breach": 18.2, "hit": 76.3, "med": 5256, "loss": 15.4, "dd50": 1590, "dd95": 2511, "tmonths": 4.4}, {"q": 4, "breach": 28.4, "hit": 71.2, "med": 6412, "loss": 23.1, "dd50": 1887, "dd95": 3426, "tmonths": 3.2}, {"q": 5, "breach": 35.0, "hit": 65.0, "med": 6754, "loss": 29.0, "dd50": 1992, "dd95": 4363, "tmonths": 2.2}], "stress": [{"q": 1, "breach": 0.1, "hit": 1.2, "med": 467, "loss": 31.2, "dd50": 678, "dd95": 1356, "tmonths": 10.4}, {"q": 2, "breach": 19.1, "hit": 21.2, "med": 897, "loss": 33.0, "dd50": 1355, "dd95": 1978, "tmonths": 7.9}, {"q": 3, "breach": 44.8, "hit": 37.9, "med": 404, "loss": 42.3, "dd50": 1857, "dd95": 2478, "tmonths": 6.0}, {"q": 4, "breach": 56.2, "hit": 41.0, "med": 32, "loss": 48.3, "dd50": 1918, "dd95": 3455, "tmonths": 4.1}, {"q": 5, "breach": 60.4, "hit": 39.4, "med": -154, "loss": 52.1, "dd50": 1947, "dd95": 4706, "tmonths": 2.8}], "eval": [{"q": 1, "breach": 0.7, "hit": 99.3, "med": 12279, "loss": 0.5, "dd50": 1024, "dd95": 1691, "tmonths": 18.3}, {"q": 2, "breach": 9.1, "hit": 90.9, "med": 24148, "loss": 7.2, "dd50": 1972, "dd95": 3254, "tmonths": 8.2}, {"q": 3, "breach": 20.5, "hit": 79.5, "med": 34765, "loss": 15.3, "dd50": 2774, "dd95": 4839, "tmonths": 6.0}, {"q": 4, "breach": 30.5, "hit": 69.5, "med": 43281, "loss": 22.8, "dd50": 3467, "dd95": 6334, "tmonths": 5.1}, {"q": 5, "breach": 38.7, "hit": 61.3, "med": 49830, "loss": 28.3, "dd50": 4015, "dd95": 7794, "tmonths": 4.4}, {"q": 6, "breach": 45.2, "hit": 54.8, "med": 50658, "loss": 32.8, "dd50": 4405, "dd95": 9202, "tmonths": 4.1}], "evalStress": [{"q": 1, "breach": 17.6, "hit": 65.1, "med": 3322, "loss": 16.1, "dd50": 1560, "dd95": 2325, "tmonths": 41.7}, {"q": 2, "breach": 43.9, "hit": 56.1, "med": 3342, "loss": 36.1, "dd50": 2140, "dd95": 4921, "tmonths": 14.5}, {"q": 3, "breach": 55.0, "hit": 45.0, "med": 96, "loss": 43.6, "dd50": 2384, "dd95": 7296, "tmonths": 8.2}, {"q": 4, "breach": 61.7, "hit": 38.4, "med": 26, "loss": 48.2, "dd50": 2019, "dd95": 9347, "tmonths": 6.0}, {"q": 5, "breach": 67.5, "hit": 32.5, "med": -46, "loss": 50.7, "dd50": 1983, "dd95": 11241, "tmonths": 5.1}, {"q": 6, "breach": 71.7, "hit": 28.3, "med": -154, "loss": 52.3, "dd50": 1966, "dd95": 12993, "tmonths": 4.4}]}, "gaps": [7, 5, 6, 1, 7, 30, 1, 10, 7, 3, 5, 13, 3, 8, 3, 24, 8, 17, 4, 13, 7, 4, 31, 6, 14, 1, 4, 4, 10, 1, 14, 1, 6, 1, 7, 12, 1, 2, 11, 2, 15, 5, 1, 12, 4, 4, 1, 7, 5, 6, 5, 7, 5, 8, 8, 3, 1, 10, 3, 2, 4, 3, 6, 29, 36, 63, 12, 3, 5, 7, 1, 1, 18, 1, 1, 12, 2, 1, 27, 1, 12, 48, 2, 6, 9, 12, 16, 4, 1, 2, 10, 7, 1, 2, 24, 9, 43, 21, 5, 1, 20, 14, 3], "own": {"base1": {"med": 1800.6300000000012, "loss": 6.194999999999999, "dd50": 571.1400000000001, "dd95": 1093.0410000000002, "dd99": 1410.3899999999985}, "base3": {"med": 5541.640000000014, "loss": 0.29, "dd50": 841.1799999999979, "dd95": 1492.7639999999997, "dd99": 1913.233199999991}, "stress1": {"med": 464.37999999999965, "loss": 30.985000000000003, "dd50": 710.2300000000001, "dd95": 1375.407, "dd99": 1696.4219999999998}, "stress3": {"med": 1495.6399999999994, "loss": 17.645, "dd50": 1176.8199999999965, "dd95": 2256.9049999999984, "dd99": 2908.3225999999877}}};
+const MONTHS=["Led","Úno","Bře","Dub","Kvě","Čvn","Čvc","Srp","Zář","Říj","Lis","Pro"];
+let Q=3; const charts={};
+const qName=q=>q>=10?(q/10)+' NQ':q+' MNQ';
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const nf=new Intl.NumberFormat('cs-CZ',{maximumFractionDigits:0});
+const usd=(v,sign=true)=>{const s=v<0?'−':(sign&&v>0?'+':'');return s+'$'+nf.format(Math.abs(Math.round(v)));};
+const pct=v=>(v==null?'—':(Math.round(v*10)/10).toString().replace('.',',')+' %');
+const pf=(w,l)=>l>0?(w/l).toFixed(2).replace('.',','):'∞';
+const cls=v=>v>0?'pos':(v<0?'neg':'');
+const T=D.trades.map(t=>({...t,year:+t.xt.slice(0,4),month:+t.xt.slice(5,7)}));
+
+function series(q){
+  let eq=0,peak=0; const e=[],dd=[];
+  T.forEach(t=>{eq+=t.pnl*q;peak=Math.max(peak,eq);e.push(eq);dd.push(eq-peak);});
+  return {e,dd};
+}
+function summary(list,q){
+  const p=list.map(t=>t.pnl*q); const w=p.filter(x=>x>0), l=p.filter(x=>x<=0);
+  const gw=w.reduce((a,b)=>a+b,0), gl=-l.reduce((a,b)=>a+b,0);
+  let eq=0,pk=0,mdd=0; p.forEach(x=>{eq+=x;pk=Math.max(pk,eq);mdd=Math.max(mdd,pk-eq);});
+  return {n:p.length,tot:gw-gl,pf:pf(gw,gl),win:p.length?w.length/p.length*100:0,avg:p.length?(gw-gl)/p.length:0,
+    aw:w.length?gw/w.length:0,al:l.length?-gl/l.length:0,mdd};
+}
+function episodes(q){
+  const {e}=series(q); const pts=[{v:0,i:-1}].concat(e.map((v,i)=>({v,i})));
+  const eps=[]; let pk=pts[0],tr=pts[0],inDD=false;
+  for(let k=1;k<pts.length;k++){const p=pts[k];
+    if(p.v>=pk.v){ if(inDD){eps.push({pk,tr,rec:p});inDD=false;} pk=p;tr=p; }
+    else { inDD=true; if(p.v<tr.v) tr=p; } }
+  if(inDD) eps.push({pk,tr,rec:null});
+  return eps.filter(x=>x.pk.v-x.tr.v>0);
+}
+const dt=i=>i<0?'začátek':T[i].xt.slice(0,10);
+
+function renderStats(){
+  const s=summary(T,Q);
+  const items=[[usd(s.tot),'Čistý zisk',cls(s.tot)],[s.pf,'Profit factor',''],[usd(-s.mdd,false).replace('$','$'),'Max drawdown','neg'],
+    [s.n,'Obchodů',''],[pct(s.win),'Win rate',''],[usd(s.avg),'Průměr na obchod',cls(s.avg)]];
+  document.getElementById('stats').innerHTML=items.map(([v,k,c])=>`<div class="stat"><div class="v ${c}">${v}</div><div class="k">${k}</div></div>`).join('');
+}
+function renderLadder(){
+  const L=document.getElementById('ladder'); let h='';
+  for(let s=4;s>=-4;s--){const top=50-s*11; const c=s===0?'z':(s===4?'s4':(s===-4?'l4':''));
+    h+=`<div class="${c}" style="top:${top}%"><span>${s>0?'+':(s<0?'−':'')}${Math.abs(s)}σ</span></div>`;}
+  L.innerHTML=h;
+}
+function mk(id,cfg){ if(charts[id]) charts[id].destroy(); charts[id]=new Chart(document.getElementById(id),cfg); }
+function baseOpts(){
+  const g=css('--line'), m=css('--muted');
+  Chart.defaults.font.family=css('--font'); Chart.defaults.color=m;
+  return {responsive:true,maintainAspectRatio:false,animation:window.matchMedia('(prefers-reduced-motion: reduce)').matches?false:{duration:400},
+    plugins:{legend:{display:false},tooltip:{intersect:false,mode:'index'}},
+    scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,maxRotation:0}},y:{grid:{color:g},border:{display:false},ticks:{callback:v=>usd(v,false).replace('−','-')}}}};
+}
+function renderCharts(){
+  const {e,dd}=series(Q); const labels=T.map(t=>t.xt.slice(0,10));
+  const o=baseOpts();
+  mk('eqChart',{type:'line',data:{labels,datasets:[{data:e,borderColor:css('--long'),backgroundColor:css('--long')+'22',fill:true,pointRadius:0,borderWidth:2,tension:.15}]},
+    options:{...o,plugins:{...o.plugins,tooltip:{...o.plugins.tooltip,callbacks:{label:c=>'Kumulativně '+usd(c.parsed.y)}}}}});
+  const o2=baseOpts();
+  mk('ddChart',{type:'line',data:{labels,datasets:[{data:dd,borderColor:css('--short'),backgroundColor:css('--short')+'33',fill:true,pointRadius:0,borderWidth:1.5,stepped:true}]},
+    options:{...o2,plugins:{...o2.plugins,tooltip:{...o2.plugins.tooltip,callbacks:{label:c=>'Od maxima '+usd(c.parsed.y)}}}}});
+  // histogram
+  const step=50*Q, vals=T.map(t=>t.pnl*Q); const mn=Math.floor(Math.min(...vals)/step)*step, mx=Math.ceil(Math.max(...vals)/step)*step;
+  const bins=[],cnt=[]; for(let b=mn;b<mx;b+=step){bins.push(b);cnt.push(0);} vals.forEach(v=>{let k=Math.min(bins.length-1,Math.floor((v-mn)/step));cnt[k]++;});
+  const o3=baseOpts(); o3.scales.y.ticks={precision:0}; o3.plugins.tooltip={callbacks:{title:c=>usd(bins[c[0].dataIndex])+' až '+usd(bins[c[0].dataIndex]+step),label:c=>c.parsed.y+' obchodů'}};
+  mk('histChart',{type:'bar',data:{labels:bins.map(b=>usd(b)),datasets:[{data:cnt,backgroundColor:bins.map(b=>b+step/2>0?css('--long'):css('--short')),borderRadius:3}]},options:o3});
+  const o4=baseOpts(); o4.plugins.tooltip={callbacks:{label:c=>{const t=c.raw.t;return `#${t.n} ${t.side} · MAE ${usd(-c.parsed.x,false)} · MFE ${usd(c.parsed.y,false)} · ${usd(t.pnl*Q)}`;}}};
+  o4.scales.x={type:'linear',grid:{color:css('--line')},title:{display:true,text:'nejhorší pohyb proti ($)'},ticks:{callback:v=>'$'+nf.format(v)}};
+  o4.scales.y.title={display:true,text:'nejlepší pohyb ve prospěch ($)'};
+  const pw=T.filter(t=>t.pnl>0).map(t=>({x:-t.mae*Q,y:t.mfe*Q,t})), pl=T.filter(t=>t.pnl<=0).map(t=>({x:-t.mae*Q,y:t.mfe*Q,t}));
+  mk('scatChart',{type:'scatter',data:{datasets:[{data:pw,backgroundColor:css('--long'),pointRadius:4},{data:pl,backgroundColor:css('--short')+'bb',pointRadius:3.5}]},options:o4});
+}
+function table(id,head,rows,hl){
+  document.getElementById(id).innerHTML='<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map((r,i)=>`<tr class="${hl&&hl(i)?'hl':''}">`+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody>';
+}
+function renderRuns(){
+  const eps=episodes(Q);
+  const dds=[...eps].sort((a,b)=>(b.pk.v-b.tr.v)-(a.pk.v-a.tr.v)).slice(0,5);
+  table('ddTbl',['Od vrcholu','Dno','Zotavení','Hloubka','Obchodů do dna'],dds.map(x=>[dt(x.pk.i),dt(x.tr.i),x.rec?dt(x.rec.i):'<span class="neg">trvá</span>',`<span class="neg">${usd(x.tr.v-x.pk.v)}</span>`,x.tr.i-x.pk.i]));
+  const ru=[]; for(let k=0;k<eps.length;k++){const from=eps[k].tr; const to=k+1<eps.length?eps[k+1].pk:{v:series(Q).e.at(-1),i:T.length-1}; if(to.v>from.v) ru.push({from,to});}
+  const rus=ru.sort((a,b)=>(b.to.v-b.from.v)-(a.to.v-a.from.v)).slice(0,5);
+  table('ruTbl',['Ze dna','Na vrchol','Růst','Obchodů'],rus.map(x=>[dt(x.from.i),dt(x.to.i),`<span class="pos">${usd(x.to.v-x.from.v)}</span>`,x.to.i-x.from.i]));
+  const longest=eps.reduce((a,x)=>{const end=x.rec?x.rec.i:T.length-1;const d=(new Date(T[end].xt)-new Date(x.pk.i<0?T[0].et:T[x.pk.i].xt))/864e5;return d>a.d?{d,x}:a;},{d:0});
+  document.getElementById('ddNote').textContent=`Nejdelší období bez nového maxima trvalo ${Math.round(longest.d)} dní (od ${dt(longest.x.pk.i)}). Tolik času je potřeba umět vydržet, aniž bys strategii vypnul.`;
+}
+function heatColor(v,max){ if(v==null) return ''; const r=Math.abs(v)/max; const lvl=r>.6?3:(r>.25?2:1); return `background:var(--${v>0?'pos':'neg'}-${lvl})`; }
+function renderMonths(){
+  const years=[...new Set(T.map(t=>t.year))]; const m={};
+  T.forEach(t=>{const k=t.year+'-'+t.month; m[k]=(m[k]||0)+t.pnl*Q;});
+  const max=Math.max(...Object.values(m).map(Math.abs));
+  let h='<div class="h"></div>'+MONTHS.map(x=>`<div class="h">${x}</div>`).join('')+'<div class="h">Rok</div>';
+  years.forEach(y=>{h+=`<div class="y">${y}</div>`; let tot=0;
+    for(let k=1;k<=12;k++){const v=m[y+'-'+k]; if(v!=null) tot+=v; h+=`<div style="${heatColor(v,max)}" title="${MONTHS[k-1]} ${y}">${v==null?'':usd(v).replace('$','')}</div>`;}
+    h+=`<div class="t ${cls(tot)}">${usd(tot)}</div>`;});
+  document.getElementById('heat').innerHTML=h;
+  table('yrTbl',['Rok','Obchodů','Win rate','Zisk','PF','Max DD'],years.map(y=>{const s=summary(T.filter(t=>t.year===y),Q);return [y,s.n,pct(s.win),`<span class="${cls(s.tot)}">${usd(s.tot)}</span>`,s.pf,usd(-s.mdd)];}));
+  table('sideTbl',['Strana','Obchodů','Win rate','Zisk','PF','Průměr'],[['L','Long'],['S','Short']].map(([k,n])=>{const s=summary(T.filter(t=>t.side===k),Q);return [`<span class="pill ${k}">${k}</span> ${n}`,s.n,pct(s.win),`<span class="${cls(s.tot)}">${usd(s.tot)}</span>`,s.pf,usd(s.avg)];}));
+}
+function renderChar(){
+  const s=summary(T,Q); let cw=0,cl=0,mw=0,ml=0; T.forEach(t=>{if(t.pnl>0){cw++;cl=0;}else{cl++;cw=0;} mw=Math.max(mw,cw);ml=Math.max(ml,cl);});
+  const bars=T.map(t=>t.bars).sort((a,b)=>a-b); const medH=bars[Math.floor(bars.length/2)]*15;
+  const sorted=[...T].sort((a,b)=>b.pnl-a.pnl); const tot=T.reduce((a,t)=>a+t.pnl,0); const top10=sorted.slice(0,10).reduce((a,t)=>a+t.pnl,0)/tot*100;
+  table('charTbl',['Ukazatel','Hodnota'],[
+    ['Průměrná výhra',`<span class="pos">${usd(s.aw)}</span>`],['Průměrná ztráta',`<span class="neg">${usd(s.al)}</span>`],
+    ['Poměr výhra / ztráta',(s.aw/Math.abs(s.al)).toFixed(1).replace('.',',')+' : 1'],['Nejdelší série výher',mw],['Nejdelší série ztrát',ml],
+    ['Medián délky obchodu',medH>=60?(medH/60).toFixed(1).replace('.',',')+' h':medH+' min'],['Podíl top 10 obchodů na zisku',Math.round(top10)+' %'],
+    ['Obchodů za rok (průměr)',Math.round(T.length/2.72)]]);
+  const best=sorted.slice(0,5), worst=sorted.slice(-5).reverse();
+  table('topTbl',['#','Datum','Strana','Výsledek'],best.concat(worst).map(t=>[t.n,t.xt.slice(0,10),`<span class="pill ${t.side}">${t.side}</span>`,`<span class="${cls(t.pnl)}">${usd(t.pnl*Q)}</span>`]));
+}
+function renderTrades(){
+  const fs=document.getElementById('fSide').value, fr=document.getElementById('fRes').value, fy=document.getElementById('fYr').value;
+  let eq=0; const rows=[]; T.forEach(t=>{eq+=t.pnl*Q;
+    if(fs&&t.side!==fs) return; if(fr==='w'&&t.pnl<=0) return; if(fr==='l'&&t.pnl>0) return; if(fy&&t.year!==+fy) return;
+    rows.push([t.n,t.et.replace(' ','&nbsp;'),`<span class="pill ${t.side}">${t.side}</span>`,t.ep.toFixed(2),t.xp.toFixed(2),
+      `<span class="${cls(t.pnl)}">${usd(t.pnl*Q)}</span>`,usd(t.mfe*Q,false),usd(t.mae*Q),(t.bars*15>=60?(t.bars*15/60).toFixed(1).replace('.',',')+' h':t.bars*15+' min'),usd(eq)]);});
+  table('tradeTbl',['#','Vstup (ET)','Strana','Cena vstupu','Cena výstupu','Výsledek','MFE','MAE','Délka','Kumulativně'],rows);
+}
+const STEPS=[
+ {t:'Hledání úrovně',v:['ok','Hrana na extrémech'],p:'Panel „Test úrovní" simuloval fade každé úrovně najednou. Fade blízko anchoru (±0,5σ až ±1,5σ) vycházel záporně, od ±2,5σ výš kladně. Zvolena úroveň ±4σ s cílem na anchoru, tedy poměr zhruba 4–5 : 1.'},
+ {t:'Plató stopu',v:['ok','Robustní'],p:'Stejných 59 vstupů na ±4σ (Nov 2025 – Sep 2026, 5 MNQ), mění se jen stop. Všechny varianty od 0,1σ do 1σ kladné s PF 1,6–2,1. Zvolen střed nejlepší oblasti 0,7σ.',
+  h:['Stop','Zisk','Max DD','PF'],r:[['1,0σ','+$13 387','$3 674','1,64'],['0,77σ','+$16 669','$2 990','1,95'],['0,7σ','+$18 099','$2 763','2,13'],['0,65σ','+$15 474','$2 603','1,98'],['0,6σ','+$9 357','$2 443','1,59'],['0,55σ','+$10 619','$2 280','1,73'],['0,4σ','+$9 272','$2 771','1,80'],['0,3σ','+$9 494','$2 649','2,03'],['0,1σ','+$2 914','$2 753','1,74']],hl:2},
+ {t:'Out-of-sample bez filtrů',v:['bad','Rok 2025 selhal'],p:'Stejné nastavení na datech, která parametry nikdy neviděla (5 MNQ). Rok 2024 prošel, rok 2025 celý rok krvácel s winrate 15 %.',
+  h:['Období','Obchodů','Zisk','PF'],r:[['Apr–Dec 2024','70','+$3 836','1,43'],['Jan–Oct 2025','75','−$3 456','0,73'],['Nov 2025 – Apr 2026','25','+$7 419','3,07'],['Apr–Sep 2026','25','+$3 879','1,83']],hl:1},
+ {t:'Long vs. short',v:['warn','Strany se střídají'],p:'Rozdělení podle strany (5 MNQ) ukázalo, že v silném uptrendu 2024 byly shorty katastrofa (3 výhry ze 42) a v roce 2025 prodělávaly naopak longy. Funguje ta strana, která jde se směrem trhu.',
+  h:['Období','Jen long','PF','Jen short','PF'],r:[['2024','+$7 138','2,51','−$4 601','0,22'],['2025','−$2 835','0,63','+$1 039','1,18'],['Nov 2025 – Sep 2026','+$7 721','2,57','+$2 543','1,48']]},
+ {t:'Trend filtr',v:['ok','Zlepšil všechna období'],p:'Denní EMA 20 stanovená předem: nad EMA jen long fade, pod EMA jen short fade (3 MNQ).',
+  h:['Období','Zisk','Max DD','PF'],r:[['2024','+$5 331','$2 001','1,95'],['2025','−$1 190','$2 550','0,83'],['Nov 2025 – Sep 2026','+$10 536','$1 070','3,59']]},
+ {t:'Režimové filtry pro rok 2025',v:['ok','Trend + Vol'],p:'Předem stanovené hodnoty, testováno jen jako zapnuto / vypnuto. Po tomto kroku se filtrování uzavřelo, aby se rok 2025 nepřeladil.',
+  h:['Varianta (2025)','Zisk','Max DD','PF'],r:[['Trend','−$1 190','$2 550','0,83'],['Vol bez trendu','−$1 180','$3 366','0,87'],['Trend + VIX/VIX3M','−$360','$2 550','0,94'],['Trend + Vol','−$181','$2 324','0,96']],hl:3},
+ {t:'Kontrola Trend + Vol na ostatních obdobích',v:['ok','Stejné nebo lepší'],p:'Vol filtr nepokazil ani jedno období, proto zůstal ve finální verzi.',
+  h:['Období','Zisk','Max DD','PF'],r:[['2024','+$5 078','$1 717','1,97'],['2025','−$181','$2 324','0,96'],['Nov 2025 – Sep 2026','+$11 307','$1 400','4,81']]},
+ {t:'Celý rozsah a přesnost vyplnění',v:['ok','Potvrzeno'],p:'Finální verze na lednu 2024 – září 2026 (3 MNQ). S High detalization (~28 ticků na svíčku) prakticky stejný výsledek, takže 15m svíčky nezkreslují pořadí stop / cíl.',
+  h:['Běh','Zisk','Max DD','Win rate','PF'],r:[['Default (4 ticky)','+$15 374','$3 570','28,85 %','2,13'],['High (~28 ticků)','+$15 342','$3 570','28,85 %','2,12']]}
+];
+function renderSteps(){
+  document.getElementById('steps').innerHTML=STEPS.map(s=>{
+    let tb=''; if(s.h){tb='<div class="tbl"><table><thead><tr>'+s.h.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>'+s.r.map((r,i)=>`<tr class="${s.hl===i?'hl':''}">`+r.map(c=>`<td class="${c.startsWith('+')?'pos':(c.startsWith('−')?'neg':'')}">${c}</td>`).join('')+'</tr>').join('')+'</tbody></table></div>';}
+    return `<li><div class="body"><span class="verdict v-${s.v[0]}">${s.v[1]}</span><h3>${s.t}</h3><p>${s.p}</p>${tb}</div></li>`;}).join('');
+}
+function renderMC(){
+  const f=(arr)=>arr.map(r=>[r.q+' MNQ',pct(r.breach),pct(r.hit),usd(r.med),pct(r.loss),usd(r.dd95,false)]);
+  const hd=['Velikost','Pád účtu','+$3 000 dřív než pád','Medián roku','Ztrátový rok','DD 95. perc.'];
+  table('mcBase',hd,f(D.mc.base),i=>D.mc.base[i].q===Q); table('mcStress',hd,f(D.mc.stress),i=>D.mc.stress[i].q===Q);
+  const g=(arr)=>arr.map(r=>[r.q+' MNQ',pct(r.hit),r.tmonths==null?'—':String(r.tmonths).replace('.',',')+' měs.',pct(r.breach)]);
+  const O=D.own; const rows=[['Normální, 1 rok',O.base1],['Normální, 3 roky',O.base3],['Stres, 1 rok',O.stress1],['Stres, 3 roky',O.stress3]];
+  table('mcOwn',['Scénář ('+qName(Q)+')','Medián zisku','Ztrátové období','DD medián','DD 95 %','DD 99 %'],rows.map(([n,o])=>[n,usd(o.med*Q),pct(o.loss),usd(o.dd50*Q,false),usd(o.dd95*Q,false),usd(o.dd99*Q,false)]),i=>i===3);
+  document.getElementById('ownNote').textContent=`Pro ${qName(Q)} počítej realisticky s propadem kolem ${usd(O.stress3.dd95*Q,false)} (stres, 3 roky, 95 %). Aby to bylo nejvýš 25 % účtu, potřebuješ zhruba ${usd(O.stress3.dd95*Q*4,false)}.`;
+  const per=O.stress3.dd95*4; const sizes=[25000,50000,75000,100000,150000,250000];
+  table('sizeTbl',['Účet','Doporučená velikost','Při polovině na začátku'],sizes.map(a=>{const mnq=Math.max(1,Math.floor(a/per)); const f=x=>x>=10&&x%10===0?(x/10)+' NQ':(x>=10?Math.floor(x/10)+' NQ + '+(x%10)+' MNQ':x+' MNQ'); return [usd(a,false),f(mnq),f(Math.max(1,Math.floor(mnq/2)))];}));
+  const he=['Velikost','Pass','Medián doby','Pád']; table('mcEval',he,g(D.mc.eval),i=>D.mc.eval[i].q===Q); table('mcEvalS',he,g(D.mc.evalStress),i=>D.mc.evalStress[i].q===Q);
+}
+function renderGap(){
+  const g=D.gaps, over=g.filter(x=>x>7).length, mx=Math.max(...g);
+  document.getElementById('gapNote').textContent=`Pozor na neaktivitu: ${over} ze ${g.length} mezer mezi obchody (${Math.round(over/g.length*100)} %) bylo delších než 7 dní, nejdelší ${mx} dní. V evaluaci je potřeba ručně udělat malý obchod, pokud algo 5–6 dní neobchodoval.`;
+}
+function renderQ(){
+  document.getElementById('qseg').innerHTML=[1,2,3,4,5,10,20,30].map(q=>`<button type="button" aria-pressed="${q===Q}" data-q="${q}">${qName(q)}</button>`).join('');
+}
+function renderAll(){ renderQ(); renderStats(); renderCharts(); renderRuns(); renderMonths(); renderChar(); renderTrades(); renderMC(); }
+document.getElementById('qseg').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; Q=+b.dataset.q; try{localStorage.setItem('sigmaQ',Q);}catch(_){} renderAll();});
+['fSide','fRes','fYr'].forEach(id=>document.getElementById(id).addEventListener('change',renderTrades));
+[...new Set(T.map(t=>t.year))].forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y;document.getElementById('fYr').appendChild(o);});
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const root=document.documentElement; const cur=root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  root.dataset.theme=cur==='dark'?'light':'dark'; try{localStorage.setItem('sigmaTheme',root.dataset.theme);}catch(_){} renderCharts();});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',renderCharts);
+try{const th=localStorage.getItem('sigmaTheme'); if(th) document.documentElement.dataset.theme=th; const q=+localStorage.getItem('sigmaQ'); if([1,2,3,4,5,10,20,30].includes(q)) Q=q;}catch(_){}
+renderLadder(); renderSteps(); renderGap(); renderAll();
+
+</script>
+</body>
+</html>
